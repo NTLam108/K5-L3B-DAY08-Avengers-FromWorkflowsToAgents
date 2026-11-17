@@ -28,7 +28,7 @@ Gợi ý chia vai:
 
 | Người | Vai | Commit | Test đã thêm hoặc sửa |
 | --- | --- | --- | --- |
-| Nguyễn Mạnh Quân | Shape A · Workflow + Tích hợp | (pending commit) | tests/test_workflow.py |
+| Nguyễn Mạnh Quân | Shape A · Workflow + Tích hợp (Shape chọn nộp) | `da275cb` | `src/tests/test_workflow.py` |
 | Nguyễn Trọng Lâm | Shape C · Orchestrator + Handoff · mục Trace và bằng chứng (ADR) | `880edc9`, `34a433c` | `src/tests/test_orchestrator.py` |
 | Vũ Xuân Hiếu | C3 Durability · C4 Policy · quét trace và stdout | `f4221af` | `src/tests/test_refund_safety_matrix.py`, `src/tests/test_workflow_refund_safety.py`, `src/tests/test_order_cap_and_approval_binding.py` |
 
@@ -48,19 +48,22 @@ Sao chép mục dưới đây cho từng thành viên.
 
 ### Phần việc phụ trách
 
-- Shape A (Deterministic Workflow) trong `src/lab8/shapes/workflow.py`.
-- Tích hợp và kiểm tra toàn bộ suite test cổng host.
+- Shape A (Deterministic Workflow) trong `src/lab8/shapes/workflow.py`: shape được cả nhóm thống nhất chọn làm phương án nộp chính thức trong `report/team/decision_adr.md`.
+- Tích hợp và kiểm tra toàn bộ suite test cổng host và bộ test student.
 
 ### Đóng góp cụ thể
 
-- Hoàn thiện toàn bộ logic workflow theo đúng contracts và business rules (T01–T14).
-- Thêm bộ test `src/tests/test_workflow.py`.
+- Hoàn thiện toàn bộ logic workflow theo đúng contracts và business rules (T01–T14): đọc qua `get_claim_view`, `lookup_order`, tính tiền qua `compute_compensation`, gọi `durability.issue_refund` với quote đầy đủ, truyền `crash_at` và bung lỗi `InjectedCrash`.
+- Tuân thủ nghiêm ngặt Trace Contract v1, chỉ log metadata đã allowlist, không lộ bất kỳ secret hay PII nào trong 70 trial benchmark.
+- Thêm bộ test `src/tests/test_workflow.py` (4 test kiểm tra claim chuẩn, thiếu order_id, ngoài scope principal, và claim không tồn tại).
 
 ### Bằng chứng
 
-- `pytest -q -m student -o addopts= -k workflow`: 62/62 passed.
-- `pytest -q`: 58/58 passed.
-- `python -m lab8.check_submission`: shape workflow OK.
+- Commit `da275cb` — `feat(workflow): implement shape A deterministic workflow and unit tests`.
+- `python -m pytest -q -m student -o addopts= -k workflow`: 62/62 passed.
+- `python -m pytest -q tests/test_workflow.py`: 4/4 passed.
+- `src/reports/benchmark.json`: Shape workflow đạt 70/70 trial pass (100%), pass^5 = 1.000, phương sai seed = 0.0, chi phí mô phỏng tối ưu nhất nhóm: 27.86 VND/success (tổng 1950 VND).
+- `python -m lab8.check_submission`: 0 FAIL, 0 WARN.
 
 ## 2A202603817_NguyenTrongLam
 
