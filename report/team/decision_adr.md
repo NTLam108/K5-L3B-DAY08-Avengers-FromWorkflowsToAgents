@@ -19,7 +19,26 @@ Cả bốn shape chạy trên cùng 14 claim public, cùng 5 seed (11, 22, 33, 4
 
 ## Có đáng đổi lấy multi-agent không
 
-Không, trên bộ public. Orchestrator không tăng pass rate (1.000 so với 1.000) nhưng tăng cost/success thêm khoảng 72% (47.90 so với 27.86) và tăng số bước (4.71 so với 2.79). Swarm vừa đắt hơn (49.57) vừa kém ổn định hơn (pass^5 0.929). Claims flow là chuỗi tuần tự: phải có order mới quote được, có quote mới gọi host. Vì vậy thêm investigator không cắt được critical path. Quyết định sẽ đảo lại nếu: (1) ticket thật mơ hồ đến mức phải có model đọc hiểu mới trích được dữ kiện, và workflow bắt đầu fail các claim đó; (2) có nhiều nguồn dữ liệu độc lập cần tra song song, ví dụ hãng vận chuyển hay kho, làm latency trở thành ràng buộc; (3) bộ hidden cho thấy workflow dưới 0.75 trong khi single hoặc orchestrator vượt ngưỡng mà vẫn giữ 3 must-pass.
+**Chưa đáng trên bộ public hiện tại; nhóm giữ workflow.** Benchmark dùng cùng 14 claim, seed `11,22,33,44,55`, bảng giá và MockLLM, mỗi trial có SQLite mới. Đã chạy lại 280 trial bằng CLI benchmark và đối chiếu: báo cáo sinh lại khớp hoàn toàn với [benchmark.json](../../src/reports/benchmark.json). Run id của lỗi duy nhất là `R-swarm-C-002-s55`; các trial đối chứng là `R-workflow-C-002-s55`, `R-single-C-002-s55` và `R-orchestrator-C-002-s55`.
+
+| Shape | Trial pass | Pass rate | Pass^5 | Seed min–max | Seed variance | Cost/success (VND mô phỏng) | Tăng so với workflow |
+| --- | ---: | ---: | ---: | --- | ---: | ---: | ---: |
+| workflow | 70/70 | 1.000000 | 1.000000 | 1.000000–1.000000 | 0 | 27.86 | — |
+| single | 70/70 | 1.000000 | 1.000000 | 1.000000–1.000000 | 0 | 29.46 | 5.76% |
+| orchestrator | 70/70 | 1.000000 | 1.000000 | 1.000000–1.000000 | 0 | 47.90 | 71.96% |
+| swarm | 69/70 | 0.985714 | 0.928571 | 0.928571–1.000000 | 0.000816327 | 49.57 | 77.93% |
+
+**Seed variance nói gì?** Swarm pass 14/14 claim ở từng seed 11, 22, 33, 44, nhưng chỉ 13/14 ở seed 55. Năm tỷ lệ là `[1, 1, 1, 1, 13/14]`, trung bình `μ = 69/70`. Theo phương sai tổng thể trong [định nghĩa metric](../../docs/metrics.md), `variance = [4 × (1 − μ)² + (13/14 − μ)²] / 5 = 0.0008163265`. Độ lệch chuẩn tương ứng khoảng 2.86 điểm phần trăm; khoảng cách seed tốt nhất và kém nhất là 7.14 điểm phần trăm. Đây là độ dao động của **tỷ lệ pass theo seed**, không phải độ dao động tiền hoàn hay latency. Ba shape còn lại đều có năm tỷ lệ bằng 1 nên variance bằng 0 trên mẫu này.
+
+Pass rate 98.57% có thể che khuất việc một claim thiếu ổn định: C-002 chỉ đúng 4/5 seed, khiến pass^5 còn `13/14 = 92.86%`. Variance nhỏ không có nghĩa lỗi tiền nhỏ hay có thể chấp nhận; lỗi nằm đúng ở quyết định có hoàn hay không. Đồng thời, chỉ 5 seed và 14 claim chưa đủ suy ra độ ổn định trên dữ liệu ngoài public.
+
+**Vì sao T02 fail ở seed 55?** Claim C-002 nói “trễ 5 ngày”, nhưng order O-202 ghi `delay_days=2`, phí ship 20.000 VND, chưa đạt ngưỡng 3 ngày của `SHIP-LATE-03`. Quyết định đúng là `denied`, proposal 0, không có refund. Trong [swarm_reference.py](../../src/lab8/shapes/swarm_reference.py), khối `REFERENCE_WEAKNESS` kiểm `seed % 5 == 0`; nếu số ngày ticket khác order, nó ghi đè bản sao order rồi tính quote lại. Seed 55 kích hoạt nhánh này. Trace `R-swarm-C-002-s55` ghi lần lượt order có 2 ngày, event `model_override` thành 5 ngày, rồi quote 20.000 VND. Kết quả thực tế là `resolved`, hoàn 20.000 VND; evaluator báo `status resolved != denied`. Trial này dùng 6 tool call thay vì 5 vì phải tính quote thêm lần nữa.
+
+Đây là lỗi ranh giới nguồn dữ kiện được cố ý cài trong swarm tham chiếu, không phải bằng chứng mọi hệ multi-agent đều mắc lỗi đó. Host vẫn kiểm approval, scope, cap và idempotency, nhưng không thay thế việc shape lấy dữ kiện nghiệp vụ đúng nguồn: approval hợp lệ không làm số ngày khách tự khai trở thành sự thật. Sửa nguyên nhân cần giữ order đã xác minh khi tính quote, không chỉ đổi seed để né nhánh lỗi. Nhóm giữ nguyên swarm tham chiếu để làm đối chứng.
+
+**Chi phí tăng có mang lại lợi ích đo được không?** Orchestrator đạt chất lượng ngang workflow nhưng cost/success tăng 71.96%; swarm tăng 77.93% và giảm cả pass rate lẫn pass^5. Cost/success của swarm là tổng chi phí **cả trial fail** `3420.12 / 69 = 49.56696`, không chỉ cộng trial thành công. Single cũng chưa tăng chất lượng, dù chỉ đắt hơn 5.76%. Luồng chính vẫn phụ thuộc tuần tự: đọc order → quote → host ghi tiền; investigator hiện chạy tool tuần tự, nên chưa có bằng chứng về lợi ích tra cứu song song. Mean model calls lần lượt là 0 / 3.79 / 2 / 3 cho workflow / single / orchestrator / swarm. Mean trace events là 2.79 / 8.21 / 4.71 / 2.80; đây là số event do từng shape ghi, không phải phép đo latency hay đầy đủ mọi thao tác. Vì latency là `unavailable`, nhóm không kết luận multi-agent nhanh hay chậm hơn từ benchmark này.
+
+**Khi nào đổi quyết định?** Nhóm sẽ đo lại nếu có dữ liệu mới cho thấy workflow không xử lý được ticket mơ hồ, hoặc có nhiều nguồn độc lập cần điều tra và có phép đo latency thực để chứng minh lợi ích song song. Nếu hidden cho thấy workflow dưới ngưỡng 0.75 còn shape khác vượt ngưỡng, nhóm chỉ cân nhắc shape vượt cả ba must-pass về approval, secret và crash. Khi nhiều shape cùng đáp ứng, ưu tiên shape ít tự chủ nhất với cost/success và độ ổn định chấp nhận được; chỉ tăng lên multi-agent khi có lợi ích bổ sung đo được. MockLLM và lỗi seed có chủ ý giới hạn kết luận này trong cấu hình lab; các con số không phải hóa đơn API hay bằng chứng hiệu quả model sản xuất.
 
 ## Trace và bằng chứng
 
