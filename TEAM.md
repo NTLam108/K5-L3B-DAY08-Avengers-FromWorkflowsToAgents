@@ -12,7 +12,7 @@
 | STT | Họ tên | MSSV | Email | GitHub | Vai trò |
 | --: | ------ | ---- | ----- | ------ | ------- |
 |   1 | Nguyễn Mạnh Quân | 2A202603776 | 26ai.quannm9@vinuni.edu.vn | osgi23 | Shape A · Workflow + Tích hợp |
-|   2 | Đỗ Minh Thanh | 2A202603793|thd050810@gmail.com | thd050810 | Shape B · Single agent |
+|   2 | Đỗ Minh Thanh | 2A202603793 | thd050810@gmail.com | thd050810 | Shape B · Single agent |
 |   3 | Nguyễn Trọng Lâm | 2A202603817 | 26ai.lamnt5@vinuni.edu.vn | NTLam108 | Shape C · Orchestrator + Handoff |
 |   4 | Vũ Xuân Hiếu | 2A202603860 | [26ai.hieuvx2@vinuni.edu.vn](mailto:26ai.hieuvx2@vinuni.edu.vn) | vuhieuvh | Durability · Policy · Bảo mật |
 |   5 | Nguyễn Đức Hiếu | 2A202603772 | 26ai.hieund6@vinuni.edu.vn | Hie24 | Benchmark · Đánh giá · Báo cáo |
@@ -29,6 +29,7 @@ Gợi ý chia vai:
 | Người | Vai | Commit | Test đã thêm hoặc sửa |
 | --- | --- | --- | --- |
 | Nguyễn Mạnh Quân | Shape A · Workflow + Tích hợp (Shape chọn nộp) | `da275cb` | `src/tests/test_workflow.py` |
+| Đỗ Minh Thanh | Shape B · Single agent · ReAct/Budget · phân tích seed variance trong ADR | `bbd7c4e`, `e30eb01`, `018ffe9`, `85f981d` | `src/tests/test_single.py` (8 test: unknown claim, Budget, 3 điểm crash, conflict, tool chỉ đọc/thời điểm ghi refund, step cap) |
 | Nguyễn Trọng Lâm | Shape C · Orchestrator + Handoff · mục Trace và bằng chứng (ADR) | `880edc9`, `34a433c` | `src/tests/test_orchestrator.py` |
 | Vũ Xuân Hiếu | C3 Durability · C4 Policy · quét trace, stdout và stderr | `f4221af`, `e8bf872` | `src/tests/test_refund_safety_matrix.py`, `src/tests/test_workflow_refund_safety.py`, `src/tests/test_order_cap_and_approval_binding.py` |
 | Nguyễn Đức Hiếu | Eval · baseline Swarm · kiểm chứng benchmark · báo cáo cá nhân | `4c947f9`, `976e2ef` | `src/tests/test_eval_fairness.py` (3 test: DB riêng từng trial, đảo thứ tự seed, tái lập kết quả và chi phí) |
@@ -125,16 +126,27 @@ Sao chép mục dưới đây cho từng thành viên.
 - `src/reports/benchmark.json`: workflow, single và orchestrator cùng đạt 70/70 trial pass; Swarm đạt 69/70. Chi phí mỗi trial thành công lần lượt là 27,86; 29,46; 47,90; 49,57 VND mô phỏng.
 - Ba test Eval đã pass trong lần chạy toàn bộ suite gồm 347 test tại cây mã tương đương main `4c947f9`; số này là tổng test tích hợp ở thời điểm kiểm chứng, không phải số test do cá nhân thêm.
 
-## MSSV_HoTen
+## 2A202603793_DoMinhThanh
 
 ### Phần việc phụ trách
 
--
+- Shape B (Single agent) trong `src/lab8/shapes/single.py`: vòng ReAct, tool chỉ đọc, Budget và host ghi refund sau vòng lặp.
+- Tài liệu dùng chung `docs/decide_tools.md`, test `src/tests/test_single.py`, phân tích seed variance và mục “Có đáng đổi lấy multi-agent không” trong ADR.
 
 ### Đóng góp cụ thể
 
--
+- Đọc `run_react`, `dispatch`, Budget và swarm tham chiếu; ghi lại action tool/args hoặc final, giới hạn tám lượt có tính lượt final, cách giữ observation và tránh đếm trùng model/tool call.
+- Thay stub single bằng `run_react(max_steps=8, worker=True)`. Callback chọn `get_claim_view → lookup_order → compute_compensation → final`; dừng sớm với failed/needs_info/escalated khi thiếu dữ kiện hoặc order ngoài scope.
+- Gọi MockLLM qua `complete(budget, ...)` để tính model call, token và chi phí. Action hiện được chọn bằng nhánh Python; output MockLLM chưa trực tiếp điều khiển action.
+- Giữ tiền trong code: tính quote từ order và policy hiện hành; không tin số ngày ticket hay clause SHIP-LATE-OLD. Chỉ sau vòng ReAct mới gọi `durability.issue_refund`, truyền quote đầy đủ cùng `crash_at`, không bắt `InjectedCrash`.
+- Thêm tám test riêng: claim không tồn tại và trace; Budget; ba cửa sổ crash/resume; amount conflict; callback chỉ chọn tool đọc và chưa ghi tiền trong vòng; step cap không refund.
+- Phân tích lỗi swarm C-002 seed 55: ghi đè delay từ 2 thành 5 theo ticket, dẫn đến hoàn sai 20.000 VND. Tính variance 0.0008163265 và đối chiếu cost/success của bốn shape trong ADR.
+- Hoàn thiện [báo cáo cá nhân](report/team/2A202603793_DoMinhThanh.md), ghi rõ phạm vi kiểm chứng public và giới hạn MockLLM.
 
 ### Bằng chứng
 
--
+- Commit `bbd7c4e` — tài liệu chọn tool và Budget; `e30eb01` — triển khai single; `018ffe9` — tám test single; `85f981d` — phân tích ADR.
+- Từ `src/`, chạy `python -m pytest -q tests/test_single.py`: **8/8 passed**.
+- `python -m pytest -q -m student -o addopts= -k 'single and not workflow and not orchestrator and not swarm'`: **62/62 passed**, gồm T11 retry và T12 crash/resume.
+- `src/reports/benchmark.json`: single **70/70 trial pass**, pass rate/pass^5 **1.000/1.000**, seed min–max **1.000–1.000**, variance **0**, cost/success **29,46 VND mô phỏng**; mean model calls **3,79**, mean tool calls **2,79**.
+- Run id đối chiếu: `R-single-C-002-s55` trả denied đúng nhãn, còn `R-swarm-C-002-s55` trả resolved sai nhãn. Single không tự trừ tiền đã hoàn trước khi gọi host.
