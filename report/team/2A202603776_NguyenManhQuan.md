@@ -4,7 +4,7 @@
 
 - Họ tên: Nguyễn Mạnh Quân
 - MSSV: 2A202603776
-- Email: manhquan03122005@gmail.com
+- Email: 26ai.quannm9@vinuni.edu.vn
 - GitHub: [osgi23](https://github.com/osgi23)
 - Nhóm: Avengers (L3A)
 - Vai trò: Shape A · Workflow + Tích hợp (`wf`)
