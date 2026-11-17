@@ -3,8 +3,8 @@
 ## Thông tin nhóm
 
 - Tên nhóm: Avengers
-- Lớp: L3A
-- Repo nhóm: `K5-L3A-DAY08-Avengers-FromWorkflowsToAgents` (xem [SUBMISSION.md](SUBMISSION.md))
+- Lớp: L3B
+- Repo nhóm: `K5-L3B-DAY08-Avengers-FromWorkflowsToAgents` (xem [SUBMISSION.md](SUBMISSION.md))
 - URL repo, nhánh nộp, commit chốt: https://github.com/NTLam108/K5-L3B-DAY08-Avengers-FromWorkflowsToAgents, main
 
 ## Thành viên
