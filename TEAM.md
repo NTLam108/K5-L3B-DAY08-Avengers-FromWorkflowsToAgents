@@ -30,7 +30,7 @@ Gợi ý chia vai:
 | --- | --- | --- | --- |
 | Nguyễn Mạnh Quân | Shape A · Workflow + Tích hợp (Shape chọn nộp) | `da275cb` | `src/tests/test_workflow.py` |
 | Đỗ Minh Thanh | Shape B · Single agent · ReAct/Budget · phân tích seed variance trong ADR | `bbd7c4e`, `e30eb01`, `018ffe9`, `85f981d` | `src/tests/test_single.py` (8 test: unknown claim, Budget, 3 điểm crash, conflict, tool chỉ đọc/thời điểm ghi refund, step cap) |
-| Nguyễn Trọng Lâm | Shape C · Orchestrator + Handoff · mục Trace và bằng chứng (ADR) | `880edc9`, `34a433c` | `src/tests/test_orchestrator.py` |
+| Nguyễn Trọng Lâm | Shape C · Orchestrator + Handoff · report benchmark/crash · ADR, research card, báo cáo nhóm · bonus B4 | `880edc9`, `34a433c`, `a152042`, `30accf1`, `95b63db`, `773a1fa`, `ca41f8e` | `src/tests/test_orchestrator.py` (21 test), `src/tests/test_bonus_b4.py` (24 test) |
 | Vũ Xuân Hiếu | C3 Durability · C4 Policy · quét trace, stdout và stderr | `f4221af`, `e8bf872` | `src/tests/test_refund_safety_matrix.py`, `src/tests/test_workflow_refund_safety.py`, `src/tests/test_order_cap_and_approval_binding.py` |
 | Nguyễn Đức Hiếu | Eval · baseline Swarm · kiểm chứng benchmark · báo cáo cá nhân | `4c947f9`, `976e2ef` | `src/tests/test_eval_fairness.py` (3 test: DB riêng từng trial, đảo thứ tự seed, tái lập kết quả và chi phí) |
 
@@ -73,18 +73,22 @@ Sao chép mục dưới đây cho từng thành viên.
 
 - Shape C (Orchestrator + read-only investigators) trong `src/lab8/shapes/orchestrator.py`.
 - Ranh giới handoff `handoff.v1` và trace an toàn (C5); mục "Trace và bằng chứng" trong `report/team/decision_adr.md`.
+- Sinh report benchmark và crash, điền ADR và research card, hoàn thiện báo cáo nhóm, chốt commit nộp.
+- Bonus B4: baseline công bằng, ablation và thống kê.
 
 ### Đóng góp cụ thể
 
 - Cài orchestrator theo CP2 và CP3: handoff allowlist với `facts` rỗng, investigator chỉ có `lookup_order` và `lookup_refund_history`, orchestrator tự tính quote và truyền quote đầy đủ cùng `crash_at` vào `durability.issue_refund`.
-- Thêm `src/tests/test_orchestrator.py` (21 test).
-- Viết phần "Shape C — Orchestrator và handoff" trong `report/team/group_report.md`.
+- Thêm `src/tests/test_orchestrator.py` (21 test): ranh giới handoff, quét lộ dữ liệu trên 14 claim, tiền do code tính, gọi lại ba lần, crash rồi resume.
+- Sinh `src/reports/benchmark.json` (4 shape × 14 claim × 5 seed) và `src/reports/crash.json` (20/20); điền `decision_adr.md` (shape chọn workflow) và `research_card.md` (R1 · Scaling).
+- Viết mục "Trace và bằng chứng" trong ADR; viết phần orchestrator, workflow, single, kết quả, khó khăn và tài liệu tham khảo trong `report/team/group_report.md`; chốt commit `773a1fa` sau khi chạy lại benchmark và crash cho kết quả trùng khớp.
+- Bonus B4: baseline `rules_only` và `swarm_pruned`, ba ablation trên workflow qua `--extra-shape`, `src/bonus/stats.py` (bootstrap CI theo claim, McNemar, sign test) và `report/team/bonus_report.md`; thêm `src/tests/test_bonus_b4.py` (24 test).
 
 ### Bằng chứng
 
-- Commit `880edc9` (orchestrator) và `34a433c` (test).
-- `python -m pytest -q -m student -o addopts= -k orchestrator`: 62/62 passed; `python -m pytest -q tests/test_orchestrator.py`: 21/21 passed.
-- Benchmark public: orchestrator 70/70 trial pass (`src/reports/benchmark.json`).
+- Commit `880edc9` (orchestrator), `34a433c` (test orchestrator), `a152042` (report benchmark và crash), `30accf1` (ADR và research card), `95b63db` (CP5: trace evidence, báo cáo cá nhân), `773a1fa` (bonus B4), `ca41f8e` (chốt commit, hoàn thiện báo cáo nhóm).
+- `python -m pytest -q -m student -o addopts= -k orchestrator`: 62/62 passed; `python -m pytest -q tests/test_orchestrator.py`: 21/21 passed; `python -m pytest -q tests/test_bonus_b4.py`: 24/24 passed.
+- Benchmark public: orchestrator 70/70 trial pass (`src/reports/benchmark.json`); bonus: `src/reports/bonus_benchmark.json` (490 trial) và `src/reports/bonus_ablation.json`.
 
 ## 2A202603860_VuXuanHieu
 
