@@ -1,7 +1,11 @@
 """Host rules that span claims: per-order cap and approval bound to its own claim."""
 
+from contextlib import closing
+
+import pytest
+
 from lab8.db import connect
-from lab8.durability import committed_audit_count, get_refund, issue_refund
+from lab8.durability import InjectedCrash, committed_audit_count, get_refund, issue_refund
 from lab8.metrics import trial_pass, unexpected_ledger_rows
 from lab8.policy import order_refunded_vnd
 from lab8.runtime import dispatch
@@ -70,6 +74,32 @@ def test_retry_of_the_paying_claim_is_still_idempotent(public_db):
     assert audits == 1
 
 
+def test_partial_refund_resumes_after_crash_on_a_new_connection(public_db):
+    claim_id = "C-014"
+    order_id = "O-515"
+    quote_vnd = 150_000
+    with closing(connect(public_db)) as conn:
+        assert order_refunded_vnd(conn, order_id) == 30_000
+        with pytest.raises(InjectedCrash, match="after_effect_before_checkpoint"):
+            issue_refund(conn, claim_id, quote_vnd, crash_at="after_effect_before_checkpoint")
+
+    with closing(connect(public_db)) as conn:
+        committed = get_refund(conn, claim_id)
+        assert committed is not None
+        assert committed["amount_vnd"] == 120_000
+        assert committed_audit_count(conn, claim_id) == 1
+        checkpoint = "SELECT 1 FROM checkpoints WHERE claim_id = ? AND step = 'issue_refund'"
+        assert conn.execute(checkpoint, (claim_id,)).fetchone() is None
+
+        replay = issue_refund(conn, claim_id, quote_vnd)
+
+        assert replay["reason"] == "idempotent_replay"
+        assert replay["effect"] == committed
+        assert order_refunded_vnd(conn, order_id) == quote_vnd
+        assert committed_audit_count(conn, claim_id) == 1
+        assert conn.execute(checkpoint, (claim_id,)).fetchone() is not None
+
+
 def test_order_total_is_rechecked_inside_the_write_transaction(public_db, monkeypatch):
     """Simulate another claim committing on the same order between the read and the write."""
     import lab8.durability as durability
@@ -97,16 +127,21 @@ def test_order_total_is_rechecked_inside_the_write_transaction(public_db, monkey
 
 
 def test_approval_issued_for_another_claim_is_rejected(public_db):
-    conn = connect(public_db)
-    _add_claim(conn, "C-BORROW", "O-808", "A-001")  # A-001 belongs to C-001
-    conn.commit()
-    outcome = issue_refund(conn, "C-BORROW", 35000)
-    effect = get_refund(conn, "C-BORROW")
-    denials = _denials(conn, "C-BORROW")
-    conn.close()
-    assert outcome["reason"] == "approval_claim_mismatch"
-    assert effect is None
-    assert any("approval_claim_mismatch" in row for row in denials)
+    claim_id = "C-BORROW"
+    with closing(connect(public_db)) as conn:
+        _add_claim(conn, claim_id, "O-808", "A-001")  # A-001 belongs to C-001
+        conn.commit()
+        first = issue_refund(conn, claim_id, 35000)
+        replay = issue_refund(conn, claim_id, 35000)
+
+        assert first["ok"] is False
+        assert first["reason"] == "approval_claim_mismatch"
+        assert replay == first
+        assert get_refund(conn, claim_id) is None
+        assert committed_audit_count(conn, claim_id) == 0
+        denials = _denials(conn, claim_id)
+        assert len(denials) == 1
+        assert "approval_claim_mismatch" in denials[0]
 
 
 def test_only_the_approval_the_claim_points_to_counts(public_db):
