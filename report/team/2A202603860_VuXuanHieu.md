@@ -4,6 +4,8 @@
 
 - Họ tên Vũ Xuân Hiếu
 - MSSV 2A202603860
+- Email [26ai.hieuvx2@vinuni.edu.vn](mailto:26ai.hieuvx2@vinuni.edu.vn)
+- GitHub `vuhieuvh`
 
 ## 2. Phần việc phụ trách
 
@@ -29,6 +31,12 @@ Kiểm tra C3 Durability và C4 Policy, rà trace và stdout ở các checkpoint
 
 Codex hỗ trợ rà luồng refund, bổ sung test và tổng hợp báo cáo. Các kiểm chứng gồm chạy pytest, đối chiếu số tiền và audit trong SQLite, chạy lại crash suite và quét trace mới.
 
-## 6. Phạm vi kiểm chứng
+## 6. Tự đánh giá
+
+Tôi đã kiểm tra trần hoàn tiền và tính idempotent qua `run_claim` của cả ba shape. Các test đối chiếu kết quả trả về với số tiền, số dòng ledger và audit trong SQLite. Với Workflow, tôi kiểm thêm cả ba điểm crash và bốn dạng approval không hợp lệ khi gọi lại. Script CP5 giúp người chấm chạy lại phép quét trace, stdout và stderr trên dữ liệu public.
+
+Phần kiểm thử approval của tôi bao phủ các trạng thái đã có trước khi gọi claim. Tôi chưa bổ sung test hồi quy cho tình huống approval bị thu hồi giữa lúc host kiểm tra và ghi refund.
+
+### Phạm vi kiểm chứng
 
 Kết quả trên đây áp dụng cho bộ public. Kết quả hidden do giảng viên chấm. MockLLM chạy theo seed và latency của benchmark là `unavailable`.

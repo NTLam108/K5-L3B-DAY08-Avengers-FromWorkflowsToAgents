@@ -14,7 +14,7 @@
 |   1 | Nguyễn Mạnh Quân | 2A202603776 | manhquan03122005@gmail.com | osgi23 | Shape A · Workflow + Tích hợp |
 |   2 | Thanh | | | | Shape B · Single agent |
 |   3 | Nguyễn Trọng Lâm | 2A202603817 | 26ai.lamnt5@vinuni.edu.vn | NTLam108 | Shape C · Orchestrator + Handoff |
-|   4 | Vũ Xuân Hiếu | 2A202603860 | | | Durability · Policy · Bảo mật |
+|   4 | Vũ Xuân Hiếu | 2A202603860 | [26ai.hieuvx2@vinuni.edu.vn](mailto:26ai.hieuvx2@vinuni.edu.vn) | vuhieuvh | Durability · Policy · Bảo mật |
 |   5 | Nguyễn Đức Hiếu | 2A202603772 | 26ai.hieund6@vinuni.edu.vn | Hie24 | Benchmark · Đánh giá · Báo cáo |
 
 Gợi ý chia vai:
