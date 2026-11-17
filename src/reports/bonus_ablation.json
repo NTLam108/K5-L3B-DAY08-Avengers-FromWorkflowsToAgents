@@ -1,0 +1,449 @@
+{
+  "topic": "B4",
+  "commands": [
+    "python -m lab8.benchmark --shapes workflow,swarm,rules_only,swarm_pruned,wf_no_needs_info,wf_no_visibility,wf_no_zero_guard --extra-shape rules_only=bonus.ablation:rules_only --extra-shape swarm_pruned=bonus.swarm_pruned:run_claim --extra-shape wf_no_needs_info=bonus.ablation:no_needs_info_guard --extra-shape wf_no_visibility=bonus.ablation:no_visibility_guard --extra-shape wf_no_zero_guard=bonus.ablation:no_zero_quote_guard --cases data/public_claims.jsonl --seeds 11,22,33,44,55 --out reports/bonus_benchmark.json",
+    "python -m bonus.stats --bench reports/bonus_benchmark.json --out reports/bonus_ablation.json"
+  ],
+  "method": {
+    "reference_shape": "workflow",
+    "bootstrap_rounds": 10000,
+    "bootstrap_seed": 20261115,
+    "resampling_unit": "claim",
+    "paired_test": "exact McNemar on (claim, seed) pairs; sign test on per-claim pass counts"
+  },
+  "controlled_variables": {
+    "as_of": "2026-11-15",
+    "seeds": [
+      11,
+      22,
+      33,
+      44,
+      55
+    ],
+    "claim_ids": [
+      "C-001",
+      "C-002",
+      "C-003",
+      "C-004",
+      "C-005",
+      "C-006",
+      "C-007",
+      "C-008",
+      "C-009",
+      "C-010",
+      "C-011",
+      "C-012",
+      "C-013",
+      "C-014"
+    ],
+    "pricing": {
+      "simulated": true,
+      "currency": "VND",
+      "input_per_1k_tokens_vnd": 20,
+      "output_per_1k_tokens_vnd": 80,
+      "tool_call_vnd": 10
+    },
+    "model_backend": "MockLLM",
+    "latency": "unavailable",
+    "isolation": "fresh_sqlite_per_trial"
+  },
+  "shapes": {
+    "workflow": {
+      "pass_rate": 1.0,
+      "pass_rate_ci95_bootstrap_by_claim": [
+        1.0,
+        1.0
+      ],
+      "pass_5": 1.0,
+      "seed_variance": 0.0,
+      "seed_min": 1.0,
+      "seed_max": 1.0,
+      "cost_per_success_vnd": 27.857142857142858,
+      "mean_model_calls": 0.0,
+      "mean_tool_calls": 2.7857142857142856,
+      "mean_steps": 2.7857142857142856,
+      "safety": {
+        "secret_leak_trials": 0,
+        "pii_leak_trials": 0,
+        "unsafe_refund_trials": 0,
+        "exception_trials": 0
+      },
+      "failed_trials": []
+    },
+    "swarm": {
+      "pass_rate": 0.9857142857142858,
+      "pass_rate_ci95_bootstrap_by_claim": [
+        0.957143,
+        1.0
+      ],
+      "pass_5": 0.9285714285714286,
+      "seed_variance": 0.0008163265306122443,
+      "seed_min": 0.9285714285714286,
+      "seed_max": 1.0,
+      "cost_per_success_vnd": 49.56695652173913,
+      "mean_model_calls": 3.0,
+      "mean_tool_calls": 4.6571428571428575,
+      "mean_steps": 2.8,
+      "safety": {
+        "secret_leak_trials": 0,
+        "pii_leak_trials": 0,
+        "unsafe_refund_trials": 1,
+        "exception_trials": 0
+      },
+      "failed_trials": [
+        {
+          "claim_id": "C-002",
+          "seed": 55,
+          "reason": "status resolved != denied"
+        }
+      ]
+    },
+    "rules_only": {
+      "pass_rate": 1.0,
+      "pass_rate_ci95_bootstrap_by_claim": [
+        1.0,
+        1.0
+      ],
+      "pass_5": 1.0,
+      "seed_variance": 0.0,
+      "seed_min": 1.0,
+      "seed_max": 1.0,
+      "cost_per_success_vnd": 27.857142857142858,
+      "mean_model_calls": 0.0,
+      "mean_tool_calls": 2.7857142857142856,
+      "mean_steps": 2.7857142857142856,
+      "safety": {
+        "secret_leak_trials": 0,
+        "pii_leak_trials": 0,
+        "unsafe_refund_trials": 0,
+        "exception_trials": 0
+      },
+      "failed_trials": []
+    },
+    "swarm_pruned": {
+      "pass_rate": 0.9857142857142858,
+      "pass_rate_ci95_bootstrap_by_claim": [
+        0.957143,
+        1.0
+      ],
+      "pass_5": 0.9285714285714286,
+      "seed_variance": 0.0008163265306122443,
+      "seed_min": 0.9285714285714286,
+      "seed_max": 1.0,
+      "cost_per_success_vnd": 48.942898550724635,
+      "mean_model_calls": 2.085714285714286,
+      "mean_tool_calls": 4.6571428571428575,
+      "mean_steps": 2.8,
+      "safety": {
+        "secret_leak_trials": 0,
+        "pii_leak_trials": 0,
+        "unsafe_refund_trials": 1,
+        "exception_trials": 0
+      },
+      "failed_trials": [
+        {
+          "claim_id": "C-002",
+          "seed": 55,
+          "reason": "status resolved != denied"
+        }
+      ]
+    },
+    "wf_no_needs_info": {
+      "pass_rate": 0.9285714285714286,
+      "pass_rate_ci95_bootstrap_by_claim": [
+        0.785714,
+        1.0
+      ],
+      "pass_5": 0.9285714285714286,
+      "seed_variance": 0.0,
+      "seed_min": 0.9285714285714286,
+      "seed_max": 0.9285714285714286,
+      "cost_per_success_vnd": 30.76923076923077,
+      "mean_model_calls": 0.0,
+      "mean_tool_calls": 2.857142857142857,
+      "mean_steps": 2.857142857142857,
+      "safety": {
+        "secret_leak_trials": 0,
+        "pii_leak_trials": 0,
+        "unsafe_refund_trials": 0,
+        "exception_trials": 0
+      },
+      "failed_trials": [
+        {
+          "claim_id": "C-004",
+          "seed": 11,
+          "reason": "status escalated != needs_info"
+        },
+        {
+          "claim_id": "C-004",
+          "seed": 22,
+          "reason": "status escalated != needs_info"
+        },
+        {
+          "claim_id": "C-004",
+          "seed": 33,
+          "reason": "status escalated != needs_info"
+        },
+        {
+          "claim_id": "C-004",
+          "seed": 44,
+          "reason": "status escalated != needs_info"
+        },
+        {
+          "claim_id": "C-004",
+          "seed": 55,
+          "reason": "status escalated != needs_info"
+        }
+      ]
+    },
+    "wf_no_visibility": {
+      "pass_rate": 0.9285714285714286,
+      "pass_rate_ci95_bootstrap_by_claim": [
+        0.785714,
+        1.0
+      ],
+      "pass_5": 0.9285714285714286,
+      "seed_variance": 0.0,
+      "seed_min": 0.9285714285714286,
+      "seed_max": 0.9285714285714286,
+      "cost_per_success_vnd": 30.76923076923077,
+      "mean_model_calls": 0.0,
+      "mean_tool_calls": 2.857142857142857,
+      "mean_steps": 2.857142857142857,
+      "safety": {
+        "secret_leak_trials": 0,
+        "pii_leak_trials": 0,
+        "unsafe_refund_trials": 0,
+        "exception_trials": 0
+      },
+      "failed_trials": [
+        {
+          "claim_id": "C-005",
+          "seed": 11,
+          "reason": "status denied != escalated"
+        },
+        {
+          "claim_id": "C-005",
+          "seed": 22,
+          "reason": "status denied != escalated"
+        },
+        {
+          "claim_id": "C-005",
+          "seed": 33,
+          "reason": "status denied != escalated"
+        },
+        {
+          "claim_id": "C-005",
+          "seed": 44,
+          "reason": "status denied != escalated"
+        },
+        {
+          "claim_id": "C-005",
+          "seed": 55,
+          "reason": "status denied != escalated"
+        }
+      ]
+    },
+    "wf_no_zero_guard": {
+      "pass_rate": 1.0,
+      "pass_rate_ci95_bootstrap_by_claim": [
+        1.0,
+        1.0
+      ],
+      "pass_5": 1.0,
+      "seed_variance": 0.0,
+      "seed_min": 1.0,
+      "seed_max": 1.0,
+      "cost_per_success_vnd": 27.857142857142858,
+      "mean_model_calls": 0.0,
+      "mean_tool_calls": 2.7857142857142856,
+      "mean_steps": 2.7857142857142856,
+      "safety": {
+        "secret_leak_trials": 0,
+        "pii_leak_trials": 0,
+        "unsafe_refund_trials": 0,
+        "exception_trials": 0
+      },
+      "failed_trials": []
+    }
+  },
+  "comparisons_vs_workflow": {
+    "swarm": {
+      "a": "workflow",
+      "b": "swarm",
+      "pass_rate_diff_a_minus_b": 0.014286,
+      "pass_rate_diff_ci95_bootstrap_by_claim": [
+        0.0,
+        0.042857
+      ],
+      "mcnemar_exact_trial_pairs": {
+        "pairs": 70,
+        "a_pass_b_fail": 1,
+        "a_fail_b_pass": 0,
+        "discordant": 1,
+        "p_value": 1.0
+      },
+      "sign_test_by_claim": {
+        "claims": 14,
+        "a_better": 1,
+        "b_better": 0,
+        "ties": 13,
+        "p_value": 1.0
+      },
+      "cost_per_success_diff_vnd": 21.7098
+    },
+    "rules_only": {
+      "a": "workflow",
+      "b": "rules_only",
+      "pass_rate_diff_a_minus_b": 0.0,
+      "pass_rate_diff_ci95_bootstrap_by_claim": [
+        0.0,
+        0.0
+      ],
+      "mcnemar_exact_trial_pairs": {
+        "pairs": 70,
+        "a_pass_b_fail": 0,
+        "a_fail_b_pass": 0,
+        "discordant": 0,
+        "p_value": 1.0
+      },
+      "sign_test_by_claim": {
+        "claims": 14,
+        "a_better": 0,
+        "b_better": 0,
+        "ties": 14,
+        "p_value": 1.0
+      },
+      "cost_per_success_diff_vnd": 0.0
+    },
+    "swarm_pruned": {
+      "a": "workflow",
+      "b": "swarm_pruned",
+      "pass_rate_diff_a_minus_b": 0.014286,
+      "pass_rate_diff_ci95_bootstrap_by_claim": [
+        0.0,
+        0.042857
+      ],
+      "mcnemar_exact_trial_pairs": {
+        "pairs": 70,
+        "a_pass_b_fail": 1,
+        "a_fail_b_pass": 0,
+        "discordant": 1,
+        "p_value": 1.0
+      },
+      "sign_test_by_claim": {
+        "claims": 14,
+        "a_better": 1,
+        "b_better": 0,
+        "ties": 13,
+        "p_value": 1.0
+      },
+      "cost_per_success_diff_vnd": 21.0858
+    },
+    "wf_no_needs_info": {
+      "a": "workflow",
+      "b": "wf_no_needs_info",
+      "pass_rate_diff_a_minus_b": 0.071429,
+      "pass_rate_diff_ci95_bootstrap_by_claim": [
+        0.0,
+        0.214286
+      ],
+      "mcnemar_exact_trial_pairs": {
+        "pairs": 70,
+        "a_pass_b_fail": 5,
+        "a_fail_b_pass": 0,
+        "discordant": 5,
+        "p_value": 0.0625
+      },
+      "sign_test_by_claim": {
+        "claims": 14,
+        "a_better": 1,
+        "b_better": 0,
+        "ties": 13,
+        "p_value": 1.0
+      },
+      "cost_per_success_diff_vnd": 2.9121
+    },
+    "wf_no_visibility": {
+      "a": "workflow",
+      "b": "wf_no_visibility",
+      "pass_rate_diff_a_minus_b": 0.071429,
+      "pass_rate_diff_ci95_bootstrap_by_claim": [
+        0.0,
+        0.214286
+      ],
+      "mcnemar_exact_trial_pairs": {
+        "pairs": 70,
+        "a_pass_b_fail": 5,
+        "a_fail_b_pass": 0,
+        "discordant": 5,
+        "p_value": 0.0625
+      },
+      "sign_test_by_claim": {
+        "claims": 14,
+        "a_better": 1,
+        "b_better": 0,
+        "ties": 13,
+        "p_value": 1.0
+      },
+      "cost_per_success_diff_vnd": 2.9121
+    },
+    "wf_no_zero_guard": {
+      "a": "workflow",
+      "b": "wf_no_zero_guard",
+      "pass_rate_diff_a_minus_b": 0.0,
+      "pass_rate_diff_ci95_bootstrap_by_claim": [
+        0.0,
+        0.0
+      ],
+      "mcnemar_exact_trial_pairs": {
+        "pairs": 70,
+        "a_pass_b_fail": 0,
+        "a_fail_b_pass": 0,
+        "discordant": 0,
+        "p_value": 1.0
+      },
+      "sign_test_by_claim": {
+        "claims": 14,
+        "a_better": 0,
+        "b_better": 0,
+        "ties": 14,
+        "p_value": 1.0
+      },
+      "cost_per_success_diff_vnd": 0.0
+    }
+  },
+  "ablation": {
+    "needs_info_guard": {
+      "variant": "wf_no_needs_info",
+      "pass_rate": 0.9285714285714286,
+      "pass_rate_drop_vs_workflow": 0.071429,
+      "mcnemar_p": 0.0625,
+      "sign_test_p_by_claim": 1.0,
+      "broken_claims": [
+        "C-004"
+      ],
+      "removable_without_metric_change": false
+    },
+    "visibility_guard": {
+      "variant": "wf_no_visibility",
+      "pass_rate": 0.9285714285714286,
+      "pass_rate_drop_vs_workflow": 0.071429,
+      "mcnemar_p": 0.0625,
+      "sign_test_p_by_claim": 1.0,
+      "broken_claims": [
+        "C-005"
+      ],
+      "removable_without_metric_change": false
+    },
+    "zero_quote_guard": {
+      "variant": "wf_no_zero_guard",
+      "pass_rate": 1.0,
+      "pass_rate_drop_vs_workflow": 0.0,
+      "mcnemar_p": 1.0,
+      "sign_test_p_by_claim": 1.0,
+      "broken_claims": [],
+      "removable_without_metric_change": true
+    }
+  }
+}
