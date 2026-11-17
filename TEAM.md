@@ -14,7 +14,7 @@
 |   1 | Nguyễn Mạnh Quân | 2A202603776 | manhquan03122005@gmail.com | osgi23 | Shape A · Workflow + Tích hợp |
 |   2 | Thanh | | | | Shape B · Single agent |
 |   3 | Lâm | | | | Shape C · Orchestrator + Handoff |
-|   4 | Vũ Hiếu | | | | Durability · Policy · Bảo mật |
+|   4 | Vũ Xuân Hiếu | 2A202603860 | | | Durability · Policy · Bảo mật |
 |   5 | Đức Hiếu | | | | Benchmark · Đánh giá · Báo cáo |
 
 Gợi ý chia vai:
@@ -29,6 +29,7 @@ Gợi ý chia vai:
 | Người | Vai | Commit | Test đã thêm hoặc sửa |
 | --- | --- | --- | --- |
 | Nguyễn Mạnh Quân | Shape A · Workflow + Tích hợp | (pending commit) | tests/test_workflow.py |
+| Vũ Xuân Hiếu | C3 Durability · C4 Policy · quét trace và stdout | `f4221af` | `src/tests/test_refund_safety_matrix.py`, `src/tests/test_workflow_refund_safety.py`, `src/tests/test_order_cap_and_approval_binding.py` |
 
 ## Cá nhân
 
