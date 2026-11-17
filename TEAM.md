@@ -31,6 +31,7 @@ Gợi ý chia vai:
 | Nguyễn Mạnh Quân | Shape A · Workflow + Tích hợp (Shape chọn nộp) | `da275cb` | `src/tests/test_workflow.py` |
 | Nguyễn Trọng Lâm | Shape C · Orchestrator + Handoff · mục Trace và bằng chứng (ADR) | `880edc9`, `34a433c` | `src/tests/test_orchestrator.py` |
 | Vũ Xuân Hiếu | C3 Durability · C4 Policy · quét trace và stdout | `f4221af` | `src/tests/test_refund_safety_matrix.py`, `src/tests/test_workflow_refund_safety.py`, `src/tests/test_order_cap_and_approval_binding.py` |
+| Nguyễn Đức Hiếu | Eval · baseline Swarm · kiểm chứng benchmark · báo cáo cá nhân | `4c947f9`, `976e2ef` | `src/tests/test_eval_fairness.py` (3 test: DB riêng từng trial, đảo thứ tự seed, tái lập kết quả và chi phí) |
 
 ## Cá nhân
 
@@ -83,6 +84,29 @@ Sao chép mục dưới đây cho từng thành viên.
 - Commit `880edc9` (orchestrator) và `34a433c` (test).
 - `python -m pytest -q -m student -o addopts= -k orchestrator`: 62/62 passed; `python -m pytest -q tests/test_orchestrator.py`: 21/21 passed.
 - Benchmark public: orchestrator 70/70 trial pass (`src/reports/benchmark.json`).
+
+## 2A202603772_NguyenDucHieu
+
+### Phần việc phụ trách
+
+- Benchmark và đánh giá (Eval + Report): baseline Swarm, các metric trong `docs/metrics.md`, kiểm tra tính công bằng và khả năng tái lập của phép đo.
+- Kiểm chứng benchmark bốn shape sau tích hợp; sử dụng R1 và ADR nhóm đã chốt để đối chiếu số liệu.
+
+### Đóng góp cụ thể
+
+- Chạy baseline Swarm trên 14 claim public với seed `11,22,33,44,55`, tạo `src/reports/benchmark_swarm_baseline.json` bằng công cụ của lab.
+- Thêm ba test trong `src/tests/test_eval_fairness.py`: mỗi trial có DB riêng và chỉ chứa refund lịch sử đã seed lúc bắt đầu; đảo thứ tự seed không đổi kết quả; chạy lại cùng cấu hình tái lập được kết quả và chi phí mô phỏng.
+- Phân tích trial `C-002`, seed 55: Swarm tin số ngày trễ trong ticket (5 ngày) thay vì order (2 ngày), dẫn đến quote sai 20.000 VND và trạng thái `resolved` thay vì `denied`.
+- Chạy lại benchmark 4 shape × 14 claim × 5 seed và đối chiếu toàn bộ nội dung JSON với kết quả nhóm: khớp biến kiểm soát, thống kê và 280 trial. File kiểm tra trùng kết quả được giữ local; bằng chứng nộp dùng `src/reports/benchmark.json`.
+- Hoàn thiện [báo cáo cá nhân](report/team/2A202603772_NguyenDucHieu.md) theo template.
+
+### Bằng chứng
+
+- Commit `4c947f9` — `test(eval): add benchmark fairness checks and swarm baseline` (đã có trên main).
+- Commit `976e2ef` — `docs(report): add Nguyen Duc Hieu personal report`.
+- Baseline Swarm: 69/70 trial pass, pass rate 98,5714%, pass^5 92,8571%, seed variance 0,0008163265, cost/success 49,5669565 VND mô phỏng.
+- `src/reports/benchmark.json`: workflow, single và orchestrator cùng đạt 70/70 trial pass; Swarm đạt 69/70. Chi phí mỗi trial thành công lần lượt là 27,86; 29,46; 47,90; 49,57 VND mô phỏng.
+- Ba test Eval đã pass trong lần chạy toàn bộ suite gồm 347 test tại cây mã tương đương main `4c947f9`; số này là tổng test tích hợp ở thời điểm kiểm chứng, không phải số test do cá nhân thêm.
 
 ## MSSV_HoTen
 
