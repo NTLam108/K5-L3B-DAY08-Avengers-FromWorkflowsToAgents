@@ -22,7 +22,7 @@ Kiểm tra C3 Durability và C4 Policy, rà trace và stdout ở các checkpoint
 - `python -m pytest -q` có **75 pass**. Ma trận public có **248 pass**, gồm **62 test** cho mỗi shape.
 - `python -m lab8.demo.buggy_workflow` in `unsafe refund rows: 2`.
 - [Báo cáo crash](../../src/reports/crash.json) đạt **20/20**. Lần chạy lại cho cùng kết quả trên từng kịch bản.
-- Lần quét trên dữ liệu public có **0 chuỗi khớp** với các marker và giá trị nhạy cảm đã kiểm.
+- Từ `src/`, chạy `python scripts/scan_public_benchmark.py` để sinh và quét lại **280 trace mới**, stdout và stderr với **42 chuỗi tìm kiếm**. Kết quả có **0 chuỗi khớp**. [Script quét CP5](../../src/scripts/scan_public_benchmark.py)
 - Các lệnh chạy lại và kết quả từng ca nằm trong [báo cáo nhóm](group_report.md#c3--idempotency-và-khôi-phục-sau-crash).
 
 ## 5. Công cụ AI đã dùng

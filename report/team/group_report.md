@@ -44,7 +44,15 @@ Mỗi shape nhóm viết đạt **62/62** test public. [Test bổ sung trên c�
 
 ### Kiểm tra trace và đầu ra
 
-Lần chạy lại benchmark public sinh **280 trace mới**. Quét toàn bộ các trace này cùng stdout và stderr theo tiền tố `CANARY_SECRET_`, `CANARY_INTERNAL_` và các giá trị số điện thoại, địa chỉ, ghi chú nội bộ, tên hàng trong bộ dữ liệu public. Kết quả có **0 chuỗi khớp**. Git index có **0** tệp thuộc `traces/`, tệp SQLite hoặc tệp cấu hình `.env`.
+Chạy lại phép kiểm từ thư mục `src/` sau khi kích hoạt môi trường Python của lab.
+
+```bash
+python scripts/scan_public_benchmark.py
+```
+
+[Script quét](../../src/scripts/scan_public_benchmark.py) chạy benchmark public với 4 shape, 14 claim và các seed `11,22,33,44,55` trong thư mục tạm. Script quét **280 trace mới** cùng stdout và stderr với **42 chuỗi tìm kiếm**, gồm hai tiền tố `CANARY_SECRET_`, `CANARY_INTERNAL_` và 40 giá trị phân biệt của số điện thoại, địa chỉ, ghi chú nội bộ và tên hàng trong `data/public_world_state.json`. Kết quả mong đợi là **0 chuỗi khớp**. Thiếu trace hoặc có chuỗi khớp làm lệnh trả mã lỗi.
+
+Git index có **0** tệp thuộc `traces/`, tệp SQLite hoặc tệp cấu hình `.env`.
 
 ## 5. Khó khăn và cách xử lý
 
