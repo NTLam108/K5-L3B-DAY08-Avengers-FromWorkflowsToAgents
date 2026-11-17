@@ -18,7 +18,27 @@ Nhóm hiểu bài toán thế nào, chia việc ra sao, thứ tự làm bốn sh
 
 Mô tả ba shape nhóm viết (workflow, single, orchestrator): mỗi shape đọc gì, quyết định gì, gọi host ra sao. Chỉ rõ ranh giới code / model (tham khảo [docs/architecture.md](../../docs/architecture.md)), cách handoff được sanitize và trace ghi những event nào.
 
+### Shape A — Workflow
+
 ...
+
+### Shape B — Single agent
+
+...
+
+### Shape C — Orchestrator và handoff
+
+[`orchestrator.py`](../../src/lab8/shapes/orchestrator.py) chia việc thành hai vai. Orchestrator giữ mọi quyết định có hậu quả: phân loại claim, tính tiền và gọi host. Investigator chỉ đọc dữ liệu được giao.
+
+1. **Đọc claim.** Orchestrator đọc claim qua `get_claim_view`, không `SELECT *`, nên không chạm tới `parent_secret`. Claim không tồn tại thì trả `failed` (`unknown_claim`); thiếu `order_id` thì trả `needs_info` và không đoán mã đơn từ câu chữ trong ticket.
+2. **Dựng handoff.** Handoff được tạo bằng `make_handoff` theo contract `handoff.v1`. Chỉ các field trong allowlist (`contract_version`, `request_id`, `claim_id`, `principal_scope`, `task`, `facts`, `allowed_tools`, `max_output_tokens`) được giữ lại; `make_handoff` từ chối mọi tool ghi và mọi payload còn chứa `CANARY_SECRET_`, `parent_secret` hay `raw_headers`. Nhóm để `facts` rỗng: orchestrator chưa có dữ kiện đã kiểm chứng, còn "trễ 5 ngày" hay "ignore policy" trong ticket chỉ là lời khách.
+3. **Investigator chỉ đọc.** `run_readonly_investigators` chạy hai tool `lookup_order` và `lookup_refund_history` trong phạm vi principal của claim. Đơn không tồn tại hoặc thuộc khách khác thì orchestrator trả `escalated`, không chép SĐT, địa chỉ, tên hàng hay internal note. Investigator không có write registry, nên dù muốn cũng không gọi được `issue_refund`.
+4. **Tiền do code tính.** Nhóm cố ý không giao `compute_compensation` cho investigator. Orchestrator tự gọi `compute_compensation` trên order view đã kiểm chứng, để quyết định về tiền không đi qua ranh giới handoff. MockLLM chỉ được gọi để lập kế hoạch và soạn câu trả lời.
+5. **Gọi host.** Quote bằng 0 thì trả `denied` mà không gọi host. Quote lớn hơn 0 thì orchestrator truyền **quote đầy đủ** vào `durability.issue_refund` để host tự kiểm approval, trừ phần đơn đã được hoàn và chống ghi trùng. Ở T14, quote là **150.000 VND** và host chỉ ghi thêm **120.000 VND**. Orchestrator truyền `crash_at` cho host; khi gặp `InjectedCrash`, orchestrator ghi event `crash` vào trace rồi `raise` lại để crash suite thấy crash thật.
+
+Trace orchestrator ghi `plan`, `handoff` (bản đã sanitize), `investigator` (order view qua allowlist và số tiền đã hoàn), `quote`, `decision`, và `crash` khi có crash; không ghi ticket, claim row, order row hay parent context. Chi tiết và bằng chứng quét trace nằm ở mục "Trace và bằng chứng" của [`decision_adr.md`](decision_adr.md).
+
+Kết quả trên bộ public: **62/62** test student; benchmark **70/70** trial pass, pass^5 1.000, variance 0, cost/success **47,90 VND** so với **27,86 VND** của workflow (`src/reports/benchmark.json`). [`test_orchestrator.py`](../../src/tests/test_orchestrator.py) có 21 test cho ranh giới handoff, quét lộ dữ liệu trên 14 claim, tiền do code tính (C-002, C-009, C-014), gọi lại ba lần và crash rồi resume.
 
 ## 4. Kết quả
 
