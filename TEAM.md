@@ -30,7 +30,7 @@ Gợi ý chia vai:
 | --- | --- | --- | --- |
 | Nguyễn Mạnh Quân | Shape A · Workflow + Tích hợp (Shape chọn nộp) | `da275cb` | `src/tests/test_workflow.py` |
 | Nguyễn Trọng Lâm | Shape C · Orchestrator + Handoff · mục Trace và bằng chứng (ADR) | `880edc9`, `34a433c` | `src/tests/test_orchestrator.py` |
-| Vũ Xuân Hiếu | C3 Durability · C4 Policy · quét trace và stdout | `f4221af` | `src/tests/test_refund_safety_matrix.py`, `src/tests/test_workflow_refund_safety.py`, `src/tests/test_order_cap_and_approval_binding.py` |
+| Vũ Xuân Hiếu | C3 Durability · C4 Policy · quét trace, stdout và stderr | `f4221af`, `e8bf872` | `src/tests/test_refund_safety_matrix.py`, `src/tests/test_workflow_refund_safety.py`, `src/tests/test_order_cap_and_approval_binding.py` |
 | Nguyễn Đức Hiếu | Eval · baseline Swarm · kiểm chứng benchmark · báo cáo cá nhân | `4c947f9`, `976e2ef` | `src/tests/test_eval_fairness.py` (3 test: DB riêng từng trial, đảo thứ tự seed, tái lập kết quả và chi phí) |
 
 ## Cá nhân
@@ -84,6 +84,23 @@ Sao chép mục dưới đây cho từng thành viên.
 - Commit `880edc9` (orchestrator) và `34a433c` (test).
 - `python -m pytest -q -m student -o addopts= -k orchestrator`: 62/62 passed; `python -m pytest -q tests/test_orchestrator.py`: 21/21 passed.
 - Benchmark public: orchestrator 70/70 trial pass (`src/reports/benchmark.json`).
+
+## 2A202603860_VuXuanHieu
+
+### Phần việc phụ trách
+
+- Kiểm thử tính idempotent, khôi phục sau crash, approval và trần hoàn tiền theo đơn. Quét dữ liệu nhạy cảm trong trace và đầu ra console của benchmark public.
+
+### Đóng góp cụ thể
+
+- Thêm test T13/T14 và test gọi cùng claim ba lần trên cả ba shape. Với Workflow, kiểm tra ba điểm crash và bốn dạng approval không hợp lệ.
+- Viết script tái lập phép quét benchmark public và ghi phạm vi kiểm chứng trong [báo cáo cá nhân](report/team/2A202603860_VuXuanHieu.md).
+
+### Bằng chứng
+
+- Commit `f4221af` cho các test refund, `e8bf872` cho script quét.
+- Crash suite chạy lại đạt **20/20**, khớp [báo cáo crash](src/reports/crash.json).
+- Từ `src/`, chạy `python scripts/scan_public_benchmark.py` để quét 280 trace mới, stdout và stderr với 42 chuỗi tìm kiếm. Kết quả trên bộ public có 0 chuỗi khớp.
 
 ## 2A202603772_NguyenDucHieu
 
